@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ImageBackground, StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Keyboard, Image } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Keyboard, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig";
 
 const Create = () => {
   const navigation = useNavigation();
@@ -21,6 +23,29 @@ const Create = () => {
       keyboardWillHide.remove();
     };
   }, []);
+  const isFormValid = () =>
+    email.includes("@") && password.length >= 8;;
+
+  const handleSignup = async () => {
+    if (!isFormValid()) {
+      Alert.alert(
+        "Try again",
+        "Please enter a valid email and matching passwords with at least 8 characters"
+      );
+      return;
+    }
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      Alert.alert("Success", "Account created successfully");
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      
+      navigation.navigate("Login");
+    } catch (error) {
+      Alert.alert("Error", `Error creating user: ${error.message}`);
+    }
+  };
 
   const [shift, setShift] = useState(0);
 
@@ -79,7 +104,7 @@ const Create = () => {
           
           <TouchableOpacity
             style={[styles.loginButton, { top: 805, left: '35%' }]}
-            onPress={() => navigation.navigate('Home')}
+            onPress={(handleSignup) }
           >
             <Text style={{ color: 'white', fontSize: 17, textAlign: 'center', fontFamily: 'Alkatra' }}>Create Account</Text>
           </TouchableOpacity>

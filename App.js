@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { ImageBackground, StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Keyboard, Image } from 'react-native';
+import React, { useState } from 'react';
+
+import { initializeApp } from "firebase/app";  
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; 
+import { ImageBackground, StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Image, Alert } from 'react-native';
 import { useFonts } from 'expo-font';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -7,6 +10,18 @@ import Home from './Screen/home';
 import About from './Screen/about';
 import Fmat from './Screen/fmat';
 import Create from './Screen/create';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAN62AKhFVx4cWQYTErhg_bsoUCbr55IG0",
+  authDomain: "group-7-10f4a.firebaseapp.com",
+  projectId: "group-7-10f4a",
+  storageBucket: "group-7-10f4a.appspot.com",
+  messagingSenderId: "998132910042",
+  appId: "1:998132910042:web:64c658e68d2ca42141e2e3",
+  measurementId: "G-KTVQ488NSQ"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
 const Stack = createNativeStackNavigator();
 
@@ -16,21 +31,12 @@ const App = () => {
   });
 
   if (!loaded) {
-    return null;
+    return null; 
   }
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          transitionConfig: () => ({
-            animation: 'fade',
-            config: {
-              duration: 500,
-            },
-          }),
-        }}
-      >
+      <Stack.Navigator>
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
         <Stack.Screen name="Fmat" component={Fmat} options={{ headerShown: false }} />
@@ -43,72 +49,62 @@ const App = () => {
 
 const LoginScreen = () => {
   const navigation = useNavigation();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  useEffect(() => {
-    const keyboardWillShow = Keyboard.addListener('keyboardWillShow', (event) => {
-      const { height } = event.endCoordinates;
-      setShift(height);
-    });
-    const keyboardWillHide = Keyboard.addListener('keyboardWillHide', () => {
-      setShift(0);
-    });
-    return () => {
-      keyboardWillShow.remove();
-      keyboardWillHide.remove();
-    };
-  }, []);
-
-  const [shift, setShift] = useState(0);
+  const handleLogin = () => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        Alert.alert("Success", "User logged in successfully!");
+        navigation.navigate("Home");
+      })
+      .catch((error) => {
+        Alert.alert("Error", "Invalid credentials");
+      });
+  };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={shift}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <View style={styles.container}>
         <ImageBackground source={require('./assets/IE-LEO-Luz-HH-1024-1.gif')} resizeMode="cover" style={styles.image}>
           <Text style={[styles.log, { top: 540, left: '15%' }]}>Login</Text>
           <View style={{ flexDirection: 'row', top: 620, left: '15%', position: 'absolute' }}>
-            
             <TextInput
-              style={[styles.usernameInput, { width: 290, paddingLeft: 80  }]}
-              
+              style={[styles.usernameInput, { width: 290, paddingLeft: 80 }]}
               placeholder="type here"
               placeholderTextColor="grey"
-              value={username}
-              onChangeText={(text) => setUsername(text)}
+              value={email}
+              onChangeText={setEmail}
               selectionColor="white"
               keyboardType="email-address"
               autoCorrect={false}
               autoCapitalize="none"
-              fontFamily="Alkatra"
             />
-            <Text style={{color: 'white',top: 10,left: 10, fontSize: 17,fontFamily: 'Alkatra'}}>Username: </Text>
+            <Text style={{color: 'white',top: 10,left: 10, fontSize: 17}}>Email: </Text>
             <Image source={require('./assets/image-removebg-preview (3).png')} style={{ width: 32, height: 45, resizeMode: 'contain', position: 'absolute', right: -215 }} />
           </View>
           <View style={{ flexDirection: 'row', top: 680, left: '15%', position: 'absolute' }}>
             <TextInput
-              style={[styles.usernameInput, { idth: 290, paddingLeft: 80 }]}
+              style={[styles.usernameInput, { width: 290, paddingLeft: 80 }]}
               placeholder="type here"
               placeholderTextColor="grey"
               value={password}
-              onChangeText={(text) => setPassword(text)}
+              onChangeText={setPassword}
               secureTextEntry={true}
               selectionColor="white"
-              fontFamily="Alkatra"
             />
-            <Text style={{color: 'white',top: 10,left: 10, fontSize: 17,fontFamily: 'Alkatra'}}>Password: </Text>
-
+            <Text style={{color: 'white',top: 10,left: 10, fontSize: 17}}>Password: </Text>
             <Image source={require('./assets/image-removebg-preview (1).png')} style={{ width: 32, height: 45, resizeMode: 'contain', position: 'absolute', right: -220 }} />
           </View>
           <TouchableOpacity
             style={[styles.loginButton, { top: 745, left: '35%' }]}
-            onPress={() => navigation.navigate('Home')}
+            onPress={handleLogin}
           >
-            <Text style={{ color: 'white', fontSize: 17, textAlign: 'center', fontFamily: 'Alkatra' }}>Login</Text>
-
+            <Text style={{ color: 'white', fontSize: 17, textAlign: 'center' }}>Login</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Create')}>
-            <Text style={{ color: 'blue', fontSize: 17, textAlign: 'center', fontFamily: 'Alkatra', top: 350, textDecorationLine: 'underline' }}>Create Account</Text>
+            <Text style={{ color: 'blue', fontSize: 17, textAlign: 'center', top: 350, textDecorationLine: 'underline' }}>Create Account</Text>
           </TouchableOpacity>
         </ImageBackground>
       </View>
@@ -125,7 +121,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   usernameInput: {
-    
     position: 'absolute',
     width: 295,
     height: 44,
@@ -148,7 +143,6 @@ const styles = StyleSheet.create({
   },
   log: {
     position: 'absolute',
-    fontFamily: 'Alkatra',
     fontSize: 50,
     color: '#464242',
   },
